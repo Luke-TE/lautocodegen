@@ -44,7 +44,7 @@ def main():
     decoded_email = quopri.decodestring(verification_email.get_payload())
     verify_account_from_email(web_interface, decoded_email)
     loyalty_code_email = imap_interface.get_mailbox_contents('CODES')[0]
-    smtp_interface.forward_email(loyalty_code_email, target_email)
+    smtp_interface.forward_email(loyalty_code_email, target_email_addr)
 
     web_interface.close()
     smtp_interface.close()
@@ -52,5 +52,12 @@ def main():
 
 
 if __name__ == '__main__':
-    target_email = sys.argv[1]
+    target_email_addr = sys.argv[1]
     main()
+
+# Useful links
+# https://www.freecodecamp.org/news/send-emails-using-code-4fcea9df63f/
+# https://docs.python.org/3/library/email.examples.html
+# https://stackoverflow.com/questions/2717196/forwarding-an-email-with-python-smtplib
+# https://realpython.com/python-send-email/
+# https://stackoverflow.com/questions/1777264/using-python-imaplib-to-delete-an-email-from-gmail/3044555
