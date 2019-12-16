@@ -24,7 +24,7 @@ def complete_loyalty_card(web_interface: WebpageInterface, url: str, stamps: int
         field_data = {'Email': WASABI_EMAIL}
         web_interface.submit_form(field_data)
         web_interface.reset_browser()
-        print("Email sent.")
+        print(f"Verification email {i + 1} sent.")
 
 
 def verify_account_from_email(web_interface: WebpageInterface, email_content):
@@ -32,6 +32,7 @@ def verify_account_from_email(web_interface: WebpageInterface, email_content):
     verify_link_elem = parser.find(name='a', text='Click here to verify')
     verify_link = verify_link_elem['href']
     web_interface.goto(verify_link)
+    print("Account verified. Sending loyalty code...")
 
 
 def main():
@@ -44,9 +45,11 @@ def main():
     verification_email = email_getter.get_mailbox_contents('VERIFICATION')[0]
     decoded_email = quopri.decodestring(verification_email.get_payload())
     verify_account_from_email(web_browser, decoded_email)
-    time.sleep(300)
+    time.sleep(.500)
+
     loyalty_code_email = email_getter.get_mailbox_contents('CODES')[0]
     email_sender.forward_email(loyalty_code_email, target_email_addr)
+    print(f"Loyalty code sent to {target_email_addr}.")
 
     web_browser.close()
     email_sender.close()
