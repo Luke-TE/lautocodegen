@@ -49,7 +49,7 @@ def send_loyalty_code(email_getter, email_sender, web_browser, target_email_addr
         generate_loyalty_code(web_browser, email_getter)
     uid, loyalty_code_email = loyalty_code_emails[-1]
     email_sender.forward_email(loyalty_code_email, target_email_addr)
-    # email_getter.delete_email("CODES", uid)
+    email_getter.delete_email("CODES", uid)
     print(f"Loyalty code sent to {target_email_addr}.")
 
 
