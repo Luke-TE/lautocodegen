@@ -71,14 +71,14 @@ def main():
 
             if new_emails:
                 print("Processing emails.")
-                for uid, junk_email in new_emails:
-                    if junk_email['Subject'] == "I love ***REMOVED***":
-                        print(f"Email from {junk_email['From']} is correct. Loyalty code with be sent.")
+                for uid, new_email in new_emails:
+                    if new_email['Subject'] == "I love ***REMOVED***":
+                        print(f"Email from {new_email['From']} is correct. Loyalty code with be sent.")
 
                         email_sender = SMTPEmailSender(smtp_port, smtp_host, ***REMOVED***_EMAIL, passwd)
                         web_browser = WebpageInterface()
                         try:
-                            send_loyalty_code(email_getter, email_sender, web_browser, junk_email["From"])
+                            send_loyalty_code(email_getter, email_sender, web_browser, new_email["From"])
                         finally:
                             email_sender.close()
                             web_browser.close()
