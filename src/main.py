@@ -1,4 +1,3 @@
-import sys
 import quopri
 import time
 from bs4 import BeautifulSoup
@@ -30,8 +29,28 @@ def verify_account_from_email(web_interface: WebpageInterface, email_content):
     parser = BeautifulSoup(email_content, 'html.parser')
     verify_link_elem = parser.find(name='a', text='Click here to verify')
     verify_link = verify_link_elem['href']
+    web_interface.reset_browser()
     web_interface.goto(verify_link)
     print("Account verified. Sending loyalty code...")
+
+
+def generate_loyalty_code(web_interface: WebpageInterface, email_getter: IMAPEmailGetter):
+    complete_loyalty_card(web_interface, WASABI_LINK, LOYALTY_CODE_STAMPS)
+    time.sleep(3)
+    verification_email = email_getter.get_mailbox_contents('VERIFICATION')[-1]
+    decoded_email = quopri.decodestring(verification_email.get_payload())
+    verify_account_from_email(web_interface, decoded_email)
+    time.sleep(3)
+
+
+def send_loyalty_code(email_getter, email_sender, web_browser, target_email_addr):
+    loyalty_code_emails = email_getter.get_mailbox_contents('CODES')
+    if not loyalty_code_emails:
+        generate_loyalty_code(web_browser, email_getter)
+    uid, loyalty_code_email = loyalty_code_emails[-1]
+    email_sender.forward_email(loyalty_code_email, target_email_addr)
+    # email_getter.delete_email("CODES", uid)
+    print(f"Loyalty code sent to {target_email_addr}.")
 
 
 def main():
@@ -42,28 +61,32 @@ def main():
     email_sender = SMTPEmailSender(smtp_port, smtp_host, WASABI_EMAIL, passwd)
     web_browser = WebpageInterface()
 
-    complete_loyalty_card(web_browser, WASABI_LINK, LOYALTY_CODE_STAMPS)
-    verification_email = email_getter.get_mailbox_contents('VERIFICATION')[0]
-    decoded_email = quopri.decodestring(verification_email.get_payload())
-    verify_account_from_email(web_browser, decoded_email)
-    time.sleep(.400)
+    try:
+        while True:
+            junk_emails = email_getter.get_mailbox_contents('JUNK')
+            for uid, _ in junk_emails:
+                email_getter.copy_email("JUNK", "INBOX", uid)
+                email_getter.delete_email("JUNK", uid)
+                print("Email detected in junk. Moved to inbox.")
 
-    loyalty_code_email = email_getter.get_mailbox_contents('CODES')[0]
-    email_sender.forward_email(loyalty_code_email, target_email_addr)
-    print(f"Loyalty code sent to {target_email_addr}.")
+            new_emails = email_getter.get_mailbox_contents('INBOX')
 
-    web_browser.close()
-    email_sender.close()
-    email_getter.close()
+            if new_emails:
+                print("Processing emails.")
+                for uid, junk_email in new_emails:
+                    if junk_email['Subject'] == "I love wasabi":
+                        print(f"Email from {junk_email['From']} is correct. Loyalty code with be sent.")
+                        send_loyalty_code(email_getter, email_sender, web_browser, junk_email["From"])
+                    email_getter.delete_email("INBOX", uid)
+
+            else:
+                print("No emails. Sleeping...")
+                time.sleep(5)
+    finally:
+        web_browser.close()
+        email_sender.close()
+        email_getter.close()
 
 
 if __name__ == '__main__':
-    target_email_addr = sys.argv[1]
     main()
-
-# Useful links
-# https://www.freecodecamp.org/news/send-emails-using-code-4fcea9df63f/
-# https://docs.python.org/3/library/email.examples.html
-# https://stackoverflow.com/questions/2717196/forwarding-an-email-with-python-smtplib
-# https://realpython.com/python-send-email/
-# https://stackoverflow.com/questions/1777264/using-python-imaplib-to-delete-an-email-from-gmail/3044555
