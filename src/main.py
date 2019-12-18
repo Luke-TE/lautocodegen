@@ -1,7 +1,6 @@
 import sys
 import quopri
 import time
-from getpass import getpass
 from bs4 import BeautifulSoup
 from imap_email_getter import IMAPEmailGetter
 from smtp_email_sender import SMTPEmailSender
@@ -36,7 +35,9 @@ def verify_account_from_email(web_interface: WebpageInterface, email_content):
 
 
 def main():
-    passwd = getpass()
+    with open("pass.txt", 'r') as f:
+        passwd = f.readline()
+
     email_getter = IMAPEmailGetter(imap_port, imap_host, ***REMOVED***_EMAIL, passwd)
     email_sender = SMTPEmailSender(smtp_port, smtp_host, ***REMOVED***_EMAIL, passwd)
     web_browser = WebpageInterface()
@@ -45,7 +46,7 @@ def main():
     verification_email = email_getter.get_mailbox_contents('VERIFICATION')[0]
     decoded_email = quopri.decodestring(verification_email.get_payload())
     verify_account_from_email(web_browser, decoded_email)
-    time.sleep(.500)
+    time.sleep(.400)
 
     loyalty_code_email = email_getter.get_mailbox_contents('CODES')[0]
     email_sender.forward_email(loyalty_code_email, target_email_addr)
