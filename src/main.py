@@ -63,6 +63,10 @@ def main():
 
     try:
         while True:
+            email_getter = IMAPEmailGetter(imap_port, imap_host, ***REMOVED***_EMAIL, passwd)
+            email_sender = SMTPEmailSender(smtp_port, smtp_host, ***REMOVED***_EMAIL, passwd)
+            web_browser = WebpageInterface()
+
             junk_emails = email_getter.get_mailbox_contents('JUNK')
             for uid, _ in junk_emails:
                 email_getter.copy_email("JUNK", "INBOX", uid)
@@ -82,6 +86,10 @@ def main():
             else:
                 print("No emails. Sleeping...")
                 time.sleep(5)
+
+            web_browser.close()
+            email_sender.close()
+            email_getter.close()
     finally:
         web_browser.close()
         email_sender.close()
