@@ -1,3 +1,4 @@
+import copy
 import smtplib
 import ssl
 
@@ -13,8 +14,11 @@ class SMTPEmailSender:
         except smtplib.SMTPException:
             raise Exception("Could not login.")
 
-    def forward_email(self, loyalty_code_email, recipient_email_addr):
-        self._interface.sendmail(self._host_email_addr, recipient_email_addr, loyalty_code_email.as_string())
+    def forward_email(self, old_email, recipient_email_addr):
+        new_email = copy.deepcopy(old_email)
+        new_email.replace_header("From", self._host_email_addr)
+        new_email.replace_header("To", recipient_email_addr)
+        self._interface.sendmail(self._host_email_addr, recipient_email_addr, new_email.as_string())
 
     def close(self):
         self._interface.quit()
