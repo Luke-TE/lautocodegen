@@ -58,15 +58,9 @@ def main():
         passwd = f.readline()
 
     email_getter = IMAPEmailGetter(imap_port, imap_host, WASABI_EMAIL, passwd)
-    email_sender = SMTPEmailSender(smtp_port, smtp_host, WASABI_EMAIL, passwd)
-    web_browser = WebpageInterface()
 
     try:
         while True:
-            email_getter = IMAPEmailGetter(imap_port, imap_host, WASABI_EMAIL, passwd)
-            email_sender = SMTPEmailSender(smtp_port, smtp_host, WASABI_EMAIL, passwd)
-            web_browser = WebpageInterface()
-
             junk_emails = email_getter.get_mailbox_contents('JUNK')
             for uid, _ in junk_emails:
                 email_getter.copy_email("JUNK", "INBOX", uid)
@@ -80,19 +74,22 @@ def main():
                 for uid, junk_email in new_emails:
                     if junk_email['Subject'] == "I love wasabi":
                         print(f"Email from {junk_email['From']} is correct. Loyalty code with be sent.")
-                        send_loyalty_code(email_getter, email_sender, web_browser, junk_email["From"])
+
+                        email_sender = SMTPEmailSender(smtp_port, smtp_host, WASABI_EMAIL, passwd)
+                        web_browser = WebpageInterface()
+                        try:
+                            send_loyalty_code(email_getter, email_sender, web_browser, junk_email["From"])
+                        finally:
+                            email_sender.close()
+                            web_browser.close()
+
                     email_getter.delete_email("INBOX", uid)
 
             else:
                 print("No emails. Sleeping...")
                 time.sleep(5)
 
-            web_browser.close()
-            email_sender.close()
-            email_getter.close()
     finally:
-        web_browser.close()
-        email_sender.close()
         email_getter.close()
 
 
