@@ -4,16 +4,16 @@ import re
 import imaplib
 from utils.domain_utils import get_domain
 
-IMAP_PORT = 993
-
 
 class IMAPEmailGetter:
+    IMAP_PORT = 993
+
     def __init__(self, email_addr, passwd):
         with open("src/imap/imap_servers.json") as json_file:
             hosts = json.load(json_file)
         domain = get_domain(email_addr)
         host = hosts.get(domain, "")
-        self._interface = imaplib.IMAP4_SSL(host, IMAP_PORT)
+        self._interface = imaplib.IMAP4_SSL(host, self.IMAP_PORT)
         try:
             self._interface.login(email_addr, passwd)
         except imaplib.IMAP4.error:
@@ -37,8 +37,7 @@ class IMAPEmailGetter:
             if typ != 'OK':
                 raise Exception(f"Failed to get message {email_id}")
 
-            pattern_uid = re.compile(r'(?<=UID )(\d+)')
-            uid = pattern_uid.findall(str(dat[0][0]))[0]
+            uid = re.findall(r"(?<=UID )(\d+)", str(dat[0][0]))[0]
             emails.append((uid, email.message_from_bytes(dat[0][1])))
 
         return emails
