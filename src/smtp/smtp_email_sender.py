@@ -2,15 +2,16 @@ import copy
 import json
 import smtplib
 import ssl
-from utils.domain_utils import get_domain
+from utils.domain_utils import get_domain, get_abs_path
 
 
 class SMTPEmailSender:
     SMTP_PORT = 587
 
     def __init__(self, email_addr, passwd):
+        path = get_abs_path(__file__, "smtp_servers.json")
         self._host_email_addr = email_addr
-        with open("src/smtp/smtp_servers.json") as json_file:
+        with open(path) as json_file:
             hosts = json.load(json_file)
         domain = get_domain(email_addr)
         host = hosts.get(domain, "")
