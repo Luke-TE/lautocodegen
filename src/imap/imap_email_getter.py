@@ -1,13 +1,21 @@
 import email
+import json
 import re
 import imaplib
+from utils.domain_utils import get_domain
+
+IMAP_PORT = 993
 
 
-class IMAPEmailGetter:    
-    def __init__(self, port, host, host_email_addr, passwd):
-        self._interface = imaplib.IMAP4_SSL(host, port)
+class IMAPEmailGetter:
+    def __init__(self, email_addr, passwd):
+        with open("src/imap/imap_servers.json") as json_file:
+            hosts = json.load(json_file)
+        domain = get_domain(email_addr)
+        host = hosts.get(domain, "")
+        self._interface = imaplib.IMAP4_SSL(host, IMAP_PORT)
         try:
-            self._interface.login(host_email_addr, passwd)
+            self._interface.login(email_addr, passwd)
         except imaplib.IMAP4.error:
             raise Exception("Could not login.")
 
