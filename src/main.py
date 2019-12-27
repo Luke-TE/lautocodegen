@@ -1,13 +1,9 @@
 import os
-import quopri
 import time
-from bs4 import BeautifulSoup
 from imap.imap_email_getter import IMAPEmailGetter
+from loyalty_scheme import LoyaltyScheme
 from smtp.smtp_email_sender import SMTPEmailSender
 from web.webpage_interface import WebpageInterface
-
-
-
 
 
 def main():
@@ -15,10 +11,13 @@ def main():
     passwd = os.environ["PASS"]
     loyalty_url = os.environ["LOYALTY_URL"]
     stamps = os.environ["STAMPS"]
+    secret_code = os.environ["SECRET_CODE"]
 
     email_getter = IMAPEmailGetter(email, passwd)
-
+    web_browser = WebpageInterface()
     try:
+        loyalty_scheme = LoyaltyScheme(stamps, loyalty_url, web_browser)
+
         while True:
             junk_emails = email_getter.get_mailbox_contents('JUNK')
             for uid, _ in junk_emails:
@@ -31,16 +30,16 @@ def main():
             if new_emails:
                 print("Processing emails.")
                 for uid, new_email in new_emails:
-                    if new_email['Subject'] == "I love ***REMOVED***":
+                    if new_email['Subject'] == secret_code:
                         print(f"Email from {new_email['From']} is correct. Loyalty code with be sent.")
 
-                        # email_sender = SMTPEmailSender(***REMOVED***_EMAIL, passwd)
-                        # web_browser = WebpageInterface()
-                        # try:
-                        #     send_loyalty_code(email_getter, email_sender, web_browser, new_email["From"])
-                        # finally:
-                        #     email_sender.close()
-                        #     web_browser.close()
+                        email_sender = SMTPEmailSender(email, passwd)
+                        try:
+                            loyalty_scheme.send_loyalty_code(email_getter, email_sender, new_email["From"])
+                        finally:
+                            email_sender.close()
+                    else:
+                        print(f"Email did not have the subject {secret_code}.")
 
                     email_getter.delete_email("INBOX", uid)
 
@@ -50,6 +49,7 @@ def main():
 
     finally:
         email_getter.close()
+        web_browser.close()
 
 
 if __name__ == '__main__':

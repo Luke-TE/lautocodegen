@@ -2,14 +2,16 @@ import email
 import json
 import re
 import imaplib
-from utils.domain_utils import get_domain
+from utils.domain_utils import get_domain, get_abs_path
 
 
 class IMAPEmailGetter:
     IMAP_PORT = 993
 
     def __init__(self, email_addr, passwd):
-        with open("src/imap/imap_servers.json") as json_file:
+        self.email_addr = email_addr
+        path = get_abs_path(__file__, "imap_servers.json")
+        with open(path) as json_file:
             hosts = json.load(json_file)
         domain = get_domain(email_addr)
         host = hosts.get(domain, "")
