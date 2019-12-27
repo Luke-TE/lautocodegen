@@ -1,19 +1,13 @@
 import quopri
 import time
 from bs4 import BeautifulSoup
-from imap_email_getter import IMAPEmailGetter
-from smtp_email_sender import SMTPEmailSender
-from webpage_interface import WebpageInterface
+from imap.imap_email_getter import IMAPEmailGetter
+from smtp.smtp_email_sender import SMTPEmailSender
+from web.webpage_interface import WebpageInterface
 
 ***REMOVED***_EMAIL = "***REMOVED***.official@outlook.com"
 ***REMOVED***_LINK = "http://***REMOVED***/***REMOVED***"
 LOYALTY_CODE_STAMPS = 7
-
-smtp_host = "smtp.office365.com"
-smtp_port = 587
-
-imap_host = "outlook.office365.com"
-imap_port = 993
 
 
 def complete_loyalty_card(web_interface: WebpageInterface, url: str, stamps: int):
@@ -57,7 +51,7 @@ def main():
     with open("pass.txt", 'r') as f:
         passwd = f.readline()
 
-    email_getter = IMAPEmailGetter(imap_port, imap_host, ***REMOVED***_EMAIL, passwd)
+    email_getter = IMAPEmailGetter(***REMOVED***_EMAIL, passwd)
 
     try:
         while True:
@@ -75,7 +69,7 @@ def main():
                     if new_email['Subject'] == "I love ***REMOVED***":
                         print(f"Email from {new_email['From']} is correct. Loyalty code with be sent.")
 
-                        email_sender = SMTPEmailSender(smtp_port, smtp_host, ***REMOVED***_EMAIL, passwd)
+                        email_sender = SMTPEmailSender(***REMOVED***_EMAIL, passwd)
                         web_browser = WebpageInterface()
                         try:
                             send_loyalty_code(email_getter, email_sender, web_browser, new_email["From"])
