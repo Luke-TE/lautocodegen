@@ -4,17 +4,17 @@ import smtplib
 import ssl
 from utils.domain_utils import get_domain
 
-SMTP_PORT = 587
-
 
 class SMTPEmailSender:
+    SMTP_PORT = 587
+
     def __init__(self, email_addr, passwd):
         self._host_email_addr = email_addr
         with open("src/smtp/smtp_servers.json") as json_file:
             hosts = json.load(json_file)
         domain = get_domain(email_addr)
         host = hosts.get(domain, "")
-        self._interface = smtplib.SMTP(host, SMTP_PORT)
+        self._interface = smtplib.SMTP(host, self.SMTP_PORT)
         try:
             context = ssl.create_default_context()
             self._interface.starttls(context=context)
