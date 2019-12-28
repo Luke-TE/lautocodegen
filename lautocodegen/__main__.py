@@ -1,13 +1,13 @@
 import asyncio
 import logging
 import os
-from imap.imap_email_getter import IMAPEmailGetter
-from loyalty_scheme import LoyaltyScheme
-from smtp.smtp_email_sender import SMTPEmailSender
-from web.webpage_interface import WebpageInterface
+from lautocodegen.email.imap_email_getter import IMAPEmailGetter
+from lautocodegen.email.smtp_email_sender import SMTPEmailSender
+from lautocodegen.web.loyalty_scheme import LoyaltyScheme
+from lautocodegen.web.webpage_interface import WebpageInterface
 
 log = logging.getLogger()
-log.setLevel(logging.INFO)
+logging.basicConfig(level=logging.INFO)
 
 
 async def main():
