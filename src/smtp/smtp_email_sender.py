@@ -6,28 +6,43 @@ from utils.domain_utils import get_domain, get_abs_path
 
 
 class SMTPEmailSender:
-    SMTP_PORT = 587
+    PORT = 587
 
     def __init__(self, email_addr, passwd):
+        """
+        Create an SMTP connection
+        :param email_addr: The email address to use in the connection
+        :param passwd: The password for the account
+        """
         path = get_abs_path(__file__, "smtp_servers.json")
         self._host_email_addr = email_addr
         with open(path) as json_file:
             hosts = json.load(json_file)
         domain = get_domain(email_addr)
         host = hosts.get(domain, "")
-        self._interface = smtplib.SMTP(host, self.SMTP_PORT)
+        self._conn = smtplib.SMTP(host, self.PORT)
         try:
             context = ssl.create_default_context()
-            self._interface.starttls(context=context)
-            self._interface.login(email_addr, passwd)
+            self._conn.starttls(context=context)
+            self._conn.login(email_addr, passwd)
         except smtplib.SMTPException:
             raise Exception("Could not login.")
 
     def forward_email(self, old_email, recipient_email_addr):
+        """
+        Forward an email to a recipient
+        :param old_email: The email to be forwarded
+        :param recipient_email_addr: The recipient of the forwarded email
+        :return: None
+        """
         new_email = copy.deepcopy(old_email)
         new_email.replace_header("From", self._host_email_addr)
         new_email.replace_header("To", recipient_email_addr)
-        self._interface.sendmail(self._host_email_addr, recipient_email_addr, new_email.as_string())
+        self._conn.sendmail(self._host_email_addr, recipient_email_addr, new_email.as_string())
 
     def close(self):
-        self._interface.quit()
+        """
+        Close the SMTP connection
+        :return: None
+        """
+        self._conn.quit()
