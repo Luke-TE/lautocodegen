@@ -10,12 +10,17 @@ class WebpageInterface:
         self.chrome_options.add_argument("--headless")
         self.chrome_options.add_argument("--no-sandbox")
         self.chrome_options.add_argument("--disable-dev-shm-usage")
-        self.initialize_driver()
+        self._initialize_driver()
 
-    def initialize_driver(self):
+    def _initialize_driver(self):
         self._driver = webdriver.Chrome(chrome_options=self.chrome_options)
 
     def submit_form(self, field_dict: dict):
+        """
+        Submit a web form
+        :param field_dict: A name-to-input-value dictionary of the form fields
+        :return: None
+        """
         field = None
         for (field_name, field_val) in field_dict.items():
             field = self._driver.find_element_by_id(field_name)
@@ -24,16 +29,33 @@ class WebpageInterface:
         field.send_keys(Keys.RETURN)
 
     def screenshot(self):
+        """
+        Save a test screenshot
+        :return: None
+        """
         self._driver.save_screenshot("test.png")
 
     def goto(self, webpage):
+        """
+        Have the chrome instance go to the webpage specified
+        :param webpage: The url of the webpage
+        :return: None
+        """
         self._driver.get(webpage)
 
     def reset_browser(self):
+        """
+        Completely reset a browser
+        :return: None
+        """
         self._driver.delete_all_cookies()
         self._driver.refresh()
         self.close()
-        self.initialize_driver()
+        self._initialize_driver()
 
     def close(self):
+        """
+        Close the browser
+        :return: None
+        """
         self._driver.close()
