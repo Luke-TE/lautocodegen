@@ -1,58 +1,61 @@
 import asyncio
+import logging
 import os
 from imap.imap_email_getter import IMAPEmailGetter
 from loyalty_scheme import LoyaltyScheme
 from smtp.smtp_email_sender import SMTPEmailSender
 from web.webpage_interface import WebpageInterface
 
+log = logging.getLogger()
+log.setLevel(logging.INFO)
+
 
 async def main():
-    email = os.environ["EMAIL"]
-    passwd = os.environ["PASS"]
-    loyalty_url = os.environ["LOYALTY_URL"]
-    stamps = os.environ["STAMPS"]
-    secret_code = os.environ["SECRET_CODE"]
-
     email_getter = IMAPEmailGetter(email, passwd)
     web_browser = WebpageInterface()
+
     try:
         loyalty_scheme = LoyaltyScheme(stamps, loyalty_url, web_browser)
 
+        # Endless loop for sending loyalty codes
         while True:
+            # Move junk emails to inbox
             junk_emails = email_getter.get_mailbox_contents('JUNK')
             for uid, _ in junk_emails:
                 email_getter.copy_email("JUNK", "INBOX", uid)
                 email_getter.delete_email("JUNK", uid)
-                print("Email detected in junk. Moved to inbox.")
+                log.debug("Email detected in junk. Moved to inbox.")
 
             new_emails = email_getter.get_mailbox_contents('INBOX')
-
             if new_emails:
-                print("Processing emails.")
-                tasks = []
+                log.debug("Processing emails...")
                 email_sender = SMTPEmailSender(email, passwd)
-                try:
-                    for uid, new_email in new_emails:
-                        print(f"New email from {new_email['From']}")
-                        if new_email['Subject'] == secret_code:
-                            print(f"Email has the subject {secret_code}. Loyalty code will be sent.")
-                            tasks.append(
-                                asyncio.create_task(
-                                    loyalty_scheme.send_loyalty_code(email_getter, email_sender, new_email["From"])))
+                tasks = list()
 
+                try:
+                    # Process each email in inbox
+                    for uid, new_email in new_emails:
+                        log.debug(f"New email from {new_email['From']}")
+                        if new_email['Subject'] == secret_code:
+                            # Schedule task for sending (and generating) loyalty codes
+                            log.debug(f"Email has the subject {secret_code}. Loyalty code will be sent.")
+                            tasks.append(asyncio.create_task(
+                                loyalty_scheme.send_loyalty_code(email_getter, email_sender, new_email["From"])))
                         else:
-                            print(f"Email did not have the subject {secret_code}.")
+                            log.debug(f"Email did not have the subject {secret_code}.")
 
                         email_getter.delete_email("INBOX", uid)
 
-                    print("Sending loyalty codes now...")
+                    # Generate and send all loyalty codes asynchronously
+                    log.debug("Sending loyalty codes now...")
                     await asyncio.gather(*tasks)
 
                 finally:
                     email_sender.close()
 
             else:
-                print("No emails. Sleeping...")
+                # Wait as no emails currently
+                log.debug("No emails. Sleeping...")
                 await asyncio.sleep(5)
 
     finally:
@@ -61,4 +64,19 @@ async def main():
 
 
 if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser(description="Start bot for completing loyalty codes.")
+    parser.add_argument('--verbose', action='store_true', help='Output commands')
+    args = parser.parse_args()
+
+    if args.verbose:
+        log.setLevel(logging.DEBUG)
+
+    # Get environment variables
+    email = os.environ["EMAIL"]
+    passwd = os.environ["PASS"]
+    loyalty_url = os.environ["LOYALTY_URL"]
+    stamps = os.environ["STAMPS"]
+    secret_code = os.environ["SECRET_CODE"]
+
     asyncio.run(main())

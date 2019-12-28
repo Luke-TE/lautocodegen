@@ -6,27 +6,43 @@ from utils.domain_utils import get_domain, get_abs_path
 
 
 class IMAPEmailGetter:
-    IMAP_PORT = 993
+    PORT = 993
 
     def __init__(self, email_addr, passwd):
+        """
+        Create an IMAP connection
+        :param email_addr: The email address to use in the connection
+        :param passwd: The password for the account
+        """
         self.email_addr = email_addr
+
+        # Get the appropriate imap server
         path = get_abs_path(__file__, "imap_servers.json")
         with open(path) as json_file:
             hosts = json.load(json_file)
         domain = get_domain(email_addr)
         host = hosts.get(domain, "")
-        self._interface = imaplib.IMAP4_SSL(host, self.IMAP_PORT)
+
+        # Create the connection
+        self._conn = imaplib.IMAP4_SSL(host, self.PORT)
         try:
-            self._interface.login(email_addr, passwd)
+            self._conn.login(email_addr, passwd)
         except imaplib.IMAP4.error:
             raise Exception("Could not login.")
 
     def get_mailbox_contents(self, mailbox):
-        typ, dat = self._interface.select(mailbox)
+        """
+        Get the contents of a specific mailbox
+        :param mailbox: The name of the mailbox (upper-case)
+        :return: List of uid-email tuples in the mailbox
+        """
+        # Open mailbox
+        typ, dat = self._conn.select(mailbox)
         if typ != 'OK':
             raise Exception(f"Could not open mailbox {mailbox}")
 
-        typ, dat = self._interface.search(None, "ALL")
+        # Get all emails from mailbox
+        typ, dat = self._conn.search(None, "ALL")
         if typ != 'OK':
             print(f"Mailbox {mailbox} is empty.")
             return []
@@ -35,22 +51,42 @@ class IMAPEmailGetter:
         email_ids = dat[0]
         email_id_list = email_ids.split()
         for email_id in email_id_list:
-            typ, dat = self._interface.fetch(email_id, '(UID RFC822)')
+            # Try to fetch email from the mailbox
+            typ, dat = self._conn.fetch(email_id, '(UID RFC822)')
             if typ != 'OK':
                 raise Exception(f"Failed to get message {email_id}")
 
+            # Extract the UID from the email
             uid = re.findall(r"(?<=UID )(\d+)", str(dat[0][0]))[0]
+            # Add email content to the emails list
             emails.append((uid, email.message_from_bytes(dat[0][1])))
 
         return emails
 
     def delete_email(self, mailbox, uid):
-        self._interface.select(mailbox)
-        self._interface.uid('STORE', str(uid), "+FLAGS", "\\Deleted")
+        """
+        Delete an email from a mailbox, specified by the UID
+        :param mailbox: The mailbox from which to delete the email
+        :param uid: The UID of the email to delete
+        :return: None
+        """
+        self._conn.select(mailbox)
+        self._conn.uid('STORE', str(uid), "+FLAGS", "\\Deleted")
 
     def copy_email(self, source_mailbox, target_mailbox, uid):
-        self._interface.select(source_mailbox)
-        self._interface.uid('COPY', uid, target_mailbox)
+        """
+        Copy an email from one mailbox to another, specified by the UID
+        :param source_mailbox: The email's original mailbox
+        :param target_mailbox: The email's destination mailbox
+        :param uid: THe UID of the email to copy
+        :return: None
+        """
+        self._conn.select(source_mailbox)
+        self._conn.uid('COPY', uid, target_mailbox)
 
     def close(self):
-        self._interface.logout()
+        """
+        Close the IMAP connection
+        :return: None
+        """
+        self._conn.logout()
