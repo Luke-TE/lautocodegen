@@ -57,11 +57,11 @@ pipenv install
 
 The script will not run without appropriate environment variables:
 ```
-EMAIL=... # The email to be used
-PASS=... # The password for the email account
-LOYALTY_URL=... # The URL of the loyalty scheme
-STAMPS=... # The number of stamps to receive the loyalty code
-SECRET_CODE=... # The subject of incoming emails required
+LCG_EMAIL=... # The email to be used
+LCG_PASS=... # The password for the email account
+LCG_LOYALTY_URL=... # The URL of the loyalty scheme
+LCG_STAMPS=... # The number of stamps to receive the loyalty code
+LCG_SECRET_CODE=... # The subject of incoming emails required
 ```
 Set these before running the script. 
 For Docker deployment, these should be placed in an `env_file`.

@@ -1,4 +1,5 @@
 import asyncio
+import json
 import logging
 import os
 from lautocodegen.email.imap_email_getter import IMAPEmailGetter
@@ -67,16 +68,24 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description="Start bot for completing loyalty codes.")
     parser.add_argument('--verbose', action='store_true', help='Output commands')
+    parser.add_argument("--json", action='store_true', help="Use variables from a json")
     args = parser.parse_args()
 
     if args.verbose:
         log.setLevel(logging.DEBUG)
 
     # Get environment variables
-    email = os.environ["EMAIL"]
-    passwd = os.environ["PASS"]
-    loyalty_url = os.environ["LOYALTY_URL"]
-    stamps = os.environ["STAMPS"]
-    secret_code = os.environ["SECRET_CODE"]
+
+    if args.json:
+        with open("lautocodegen/resources/envs.json") as json_file:
+            env_vars = json.load(json_file)
+    else:
+        env_vars = os.environ
+
+    email = env_vars["LCG_EMAIL"]
+    passwd = env_vars["LCG_PASS"]
+    loyalty_url = env_vars["LCG_LOYALTY_URL"]
+    stamps = env_vars["LCG_STAMPS"]
+    secret_code = env_vars["LCG_SECRET_CODE"]
 
     asyncio.run(main())
