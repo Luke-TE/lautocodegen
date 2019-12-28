@@ -1,12 +1,12 @@
+import asyncio
 import os
-import time
 from imap.imap_email_getter import IMAPEmailGetter
 from loyalty_scheme import LoyaltyScheme
 from smtp.smtp_email_sender import SMTPEmailSender
 from web.webpage_interface import WebpageInterface
 
 
-def main():
+async def main():
     email = os.environ["EMAIL"]
     passwd = os.environ["PASS"]
     loyalty_url = os.environ["LOYALTY_URL"]
@@ -29,23 +29,31 @@ def main():
 
             if new_emails:
                 print("Processing emails.")
-                for uid, new_email in new_emails:
-                    if new_email['Subject'] == secret_code:
-                        print(f"Email from {new_email['From']} is correct. Loyalty code with be sent.")
+                tasks = []
+                email_sender = SMTPEmailSender(email, passwd)
+                try:
+                    for uid, new_email in new_emails:
+                        print(f"New email from {new_email['From']}")
+                        if new_email['Subject'] == secret_code:
+                            print(f"Email has the subject {secret_code}. Loyalty code will be sent.")
+                            tasks.append(
+                                asyncio.create_task(
+                                    loyalty_scheme.send_loyalty_code(email_getter, email_sender, new_email["From"])))
 
-                        email_sender = SMTPEmailSender(email, passwd)
-                        try:
-                            loyalty_scheme.send_loyalty_code(email_getter, email_sender, new_email["From"])
-                        finally:
-                            email_sender.close()
-                    else:
-                        print(f"Email did not have the subject {secret_code}.")
+                        else:
+                            print(f"Email did not have the subject {secret_code}.")
 
-                    email_getter.delete_email("INBOX", uid)
+                        email_getter.delete_email("INBOX", uid)
+
+                    print("Sending loyalty codes now...")
+                    await asyncio.gather(*tasks)
+
+                finally:
+                    email_sender.close()
 
             else:
                 print("No emails. Sleeping...")
-                time.sleep(5)
+                await asyncio.sleep(5)
 
     finally:
         email_getter.close()
@@ -53,4 +61,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())
