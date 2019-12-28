@@ -2,11 +2,12 @@ import email
 import json
 import re
 import imaplib
-from utils.domain_utils import get_domain, get_abs_path
+from lautocodegen.email.email_utils import get_domain
 
 
 class IMAPEmailGetter:
     PORT = 993
+    servers_path = "lautocodegen/resources/imap_servers.json"
 
     def __init__(self, email_addr, passwd):
         """
@@ -17,8 +18,7 @@ class IMAPEmailGetter:
         self.email_addr = email_addr
 
         # Get the appropriate imap server
-        path = get_abs_path(__file__, "imap_servers.json")
-        with open(path) as json_file:
+        with open(self.servers_path) as json_file:
             hosts = json.load(json_file)
         domain = get_domain(email_addr)
         host = hosts.get(domain, "")

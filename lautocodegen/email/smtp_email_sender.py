@@ -2,11 +2,12 @@ import copy
 import json
 import smtplib
 import ssl
-from utils.domain_utils import get_domain, get_abs_path
+from lautocodegen.email.email_utils import get_domain
 
 
 class SMTPEmailSender:
     PORT = 587
+    servers_path = "lautocodegen/resources/smtp_servers.json"
 
     def __init__(self, email_addr, passwd):
         """
@@ -14,9 +15,8 @@ class SMTPEmailSender:
         :param email_addr: The email address to use in the connection
         :param passwd: The password for the account
         """
-        path = get_abs_path(__file__, "smtp_servers.json")
         self._host_email_addr = email_addr
-        with open(path) as json_file:
+        with open(self.servers_path) as json_file:
             hosts = json.load(json_file)
         domain = get_domain(email_addr)
         host = hosts.get(domain, "")

@@ -1,10 +1,10 @@
 import asyncio
 import logging
-from imap.imap_email_getter import IMAPEmailGetter
-from smtp.smtp_email_sender import SMTPEmailSender
-from utils.email_parser import EmailParser
-from utils.email_utils import decode_email
-from web.webpage_interface import WebpageInterface
+from lautocodegen.email.email_parser import EmailParser
+from lautocodegen.email.email_utils import decode_email
+from lautocodegen.email.imap_email_getter import IMAPEmailGetter
+from lautocodegen.email.smtp_email_sender import SMTPEmailSender
+from lautocodegen.web.webpage_interface import WebpageInterface
 
 log = logging.getLogger()
 
