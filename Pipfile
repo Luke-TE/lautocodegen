@@ -8,7 +8,6 @@ verify_ssl = true
 [packages]
 requests = "*"
 selenium = "*"
-chromedriver-binary = "*"
 bs4 = "*"
 
 [requires]

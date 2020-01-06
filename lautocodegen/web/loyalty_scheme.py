@@ -6,7 +6,7 @@ from lautocodegen.email.imap_email_getter import IMAPEmailGetter
 from lautocodegen.email.smtp_email_sender import SMTPEmailSender
 from lautocodegen.web.webpage_interface import WebpageInterface
 
-log = logging.getLogger()
+log = logging.getLogger("lautocodegen")
 
 
 class LoyaltyScheme:
@@ -50,7 +50,8 @@ class LoyaltyScheme:
         :param verf_mailbox: The mailbox to get the verification email from
         :return: None
         """
-        verification_email = email_getter.get_mailbox_contents(verf_mailbox)[-1]
+        verification_emails = email_getter.get_mailbox_contents(verf_mailbox)
+        _, verification_email = verification_emails[-1]
         decoded_email = decode_email(verification_email)
         parser = EmailParser(decoded_email)
         verify_link = parser.find_url()
@@ -69,7 +70,7 @@ class LoyaltyScheme:
         await self.complete_loyalty_card(email_getter.email_addr)
         await asyncio.sleep(3)
         await self.verify_account(email_getter, verf_mailbox)
-        await asyncio.sleep(3)
+        await asyncio.sleep(5)
 
     async def send_loyalty_code(self, email_getter: IMAPEmailGetter, email_sender: SMTPEmailSender,
                                 target_email_addr: str, verf_mailbox="VERIFICATION", code_mailbox="CODES"):
@@ -91,6 +92,6 @@ class LoyaltyScheme:
 
         # Send the oldest loyalty code
         uid, loyalty_code_email = loyalty_code_emails[-1]
-        email_sender.forward_email(loyalty_code_email, target_email_addr)
         email_getter.delete_email(code_mailbox, uid)
+        email_sender.forward_email(loyalty_code_email, target_email_addr)
         log.info(f"Loyalty code sent to {target_email_addr}.")

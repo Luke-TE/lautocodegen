@@ -31,6 +31,13 @@ The Chrome browser is also required for headless Chrome:
 apt install chromium-browser
 ```  
 
+The appropriate chromedriver must also be installed:
+```bash
+cd lautocodegen/resources/
+wget "https://chromedriver.storage.googleapis.com/79.0.3945.36/chromedriver_linux64.zip" -P lautocodegen/resources/
+unzip lautocodegen/resources/chromedriver_linux64.zip -d lautocodegen/resources/
+```
+
 The virtual environment tool used in this project is Pipenv:
 ```bash
 pip install pipenv

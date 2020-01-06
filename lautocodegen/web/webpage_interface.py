@@ -1,7 +1,11 @@
+import logging
+import selenium.common.exceptions
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
-import chromedriver_binary  # Adds chromedriver binary to path
+
+log = logging.getLogger("lautocodegen")
+logging.basicConfig(level=logging.INFO)
 
 
 class WebpageInterface:
@@ -13,7 +17,8 @@ class WebpageInterface:
         self._initialize_driver()
 
     def _initialize_driver(self):
-        self._driver = webdriver.Chrome(chrome_options=self.chrome_options)
+        self._driver = webdriver.Chrome(executable_path="lautocodegen/resources/chromedriver",
+                                        chrome_options=self.chrome_options)
 
     def submit_form(self, field_dict: dict):
         """
@@ -22,11 +27,15 @@ class WebpageInterface:
         :return: None
         """
         field = None
-        for (field_name, field_val) in field_dict.items():
-            field = self._driver.find_element_by_id(field_name)
-            field.clear()
-            field.send_keys(field_val)
-        field.send_keys(Keys.RETURN)
+        try:
+            for (field_name, field_val) in field_dict.items():
+                field = self._driver.find_element_by_id(field_name)
+                field.clear()
+                field.send_keys(field_val)
+
+            field.send_keys(Keys.RETURN)
+        except selenium.common.exceptions.NoSuchElementException:
+            logging.error(f"The field {field.id} was not found.")
 
     def screenshot(self):
         """

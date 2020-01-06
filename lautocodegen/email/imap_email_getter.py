@@ -1,8 +1,12 @@
+import logging
 import email
 import json
 import re
 import imaplib
 from lautocodegen.email.email_utils import get_domain
+
+log = logging.getLogger("lautocodegen")
+logging.basicConfig(level=logging.INFO)
 
 
 class IMAPEmailGetter:
@@ -44,7 +48,7 @@ class IMAPEmailGetter:
         # Get all emails from mailbox
         typ, dat = self._conn.search(None, "ALL")
         if typ != 'OK':
-            print(f"Mailbox {mailbox} is empty.")
+            log.debug(f"Mailbox {mailbox} is empty.")
             return []
 
         emails = list()
@@ -72,6 +76,7 @@ class IMAPEmailGetter:
         """
         self._conn.select(mailbox)
         self._conn.uid('STORE', str(uid), "+FLAGS", "\\Deleted")
+        self._conn.expunge()
 
     def copy_email(self, source_mailbox, target_mailbox, uid):
         """
@@ -83,6 +88,17 @@ class IMAPEmailGetter:
         """
         self._conn.select(source_mailbox)
         self._conn.uid('COPY', uid, target_mailbox)
+
+    def move_junk_emails_to_inbox(self):
+        """
+        Move all emails in the junk mailbox to the inbox
+        :return: None
+        """
+        junk_emails = self.get_mailbox_contents('JUNK')
+        for uid, _ in junk_emails:
+            self.copy_email("JUNK", "INBOX", uid)
+            self.delete_email("JUNK", uid)
+            log.debug("Email detected in junk. Moved to inbox.")
 
     def close(self):
         """
