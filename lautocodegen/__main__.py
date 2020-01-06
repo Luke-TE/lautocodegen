@@ -33,7 +33,7 @@ async def main():
                     # Process each email in inbox
                     for uid, new_email in new_emails:
                         log.debug(f"New email from {new_email['From']}")
-                        if new_email['Subject'] == secret_code:
+                        if secret_code in new_email['Subject']:
                             # Schedule task for sending (and generating) loyalty codes
                             log.debug(f"Email has the subject {secret_code}. Loyalty code will be sent.")
                             tasks.append(asyncio.create_task(
