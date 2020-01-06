@@ -81,7 +81,7 @@ if __name__ == '__main__':
     email = env_vars["LCG_EMAIL"]
     passwd = env_vars["LCG_PASS"]
     loyalty_url = env_vars["LCG_LOYALTY_URL"]
-    stamps = env_vars["LCG_STAMPS"]
+    stamps = int(env_vars["LCG_STAMPS"])
     secret_code = env_vars["LCG_SECRET_CODE"]
 
     asyncio.run(main())
