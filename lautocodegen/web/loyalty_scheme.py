@@ -70,7 +70,6 @@ class LoyaltyScheme:
         await self.complete_loyalty_card(email_getter.email_addr)
         await asyncio.sleep(3)
         await self.verify_account(email_getter, verf_mailbox)
-        await asyncio.sleep(5)
 
     async def send_loyalty_code(self, email_getter: IMAPEmailGetter, email_sender: SMTPEmailSender,
                                 target_email_addr: str, verf_mailbox="VERIFICATION", code_mailbox="CODES"):
@@ -88,7 +87,8 @@ class LoyaltyScheme:
         if not loyalty_code_emails:
             # If no remaining, loyalty codes, generate a new one
             await self.generate_loyalty_code(email_getter, verf_mailbox)
-            loyalty_code_emails = email_getter.get_mailbox_contents(code_mailbox)
+            while not loyalty_code_emails:
+                loyalty_code_emails = email_getter.get_mailbox_contents(code_mailbox)
 
         # Send the oldest loyalty code
         uid, loyalty_code_email = loyalty_code_emails[-1]
