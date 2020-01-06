@@ -1,9 +1,8 @@
 -i https://pypi.org/simple
-beautifulsoup4==4.8.1
+beautifulsoup4==4.8.2
 bs4==0.0.1
 certifi==2019.11.28
 chardet==3.0.4
-chromedriver-binary==79.0.3945.36.0
 idna==2.8
 requests==2.22.0
 selenium==3.141.0
