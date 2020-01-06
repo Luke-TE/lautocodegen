@@ -8,4 +8,6 @@ RUN apt-get update -y \
 RUN python3.7 -m pip install pipenv
 RUN python3.7 -m pip install -r requirements.txt
 
+ENV PATH="lautocodegen/resources/chromedriver:${PATH}"
+
 CMD ["python3.7", "-m", "lautocodegen"]
