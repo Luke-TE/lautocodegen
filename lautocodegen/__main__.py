@@ -7,7 +7,7 @@ from lautocodegen.email.smtp_email_sender import SMTPEmailSender
 from lautocodegen.web.loyalty_scheme import LoyaltyScheme
 from lautocodegen.web.webpage_interface import WebpageInterface
 
-log = logging.getLogger()
+log = logging.getLogger("lautocodegen")
 logging.basicConfig(level=logging.INFO)
 
 
@@ -21,11 +21,7 @@ async def main():
         # Endless loop for sending loyalty codes
         while True:
             # Move junk emails to inbox
-            junk_emails = email_getter.get_mailbox_contents('JUNK')
-            for uid, _ in junk_emails:
-                email_getter.copy_email("JUNK", "INBOX", uid)
-                email_getter.delete_email("JUNK", uid)
-                log.debug("Email detected in junk. Moved to inbox.")
+            email_getter.move_junk_emails_to_inbox()
 
             new_emails = email_getter.get_mailbox_contents('INBOX')
             if new_emails:
@@ -77,7 +73,7 @@ if __name__ == '__main__':
     # Get environment variables
 
     if args.json:
-        with open("lautocodegen/resources/envs.json") as json_file:
+        with open("lautocodegen/resources/env_vars.json") as json_file:
             env_vars = json.load(json_file)
     else:
         env_vars = os.environ
