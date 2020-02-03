@@ -47,6 +47,9 @@ async def main():
                     log.debug("Sending loyalty codes now...")
                     await asyncio.gather(*tasks)
 
+                except:
+                    pass
+
                 finally:
                     email_sender.close()
 
