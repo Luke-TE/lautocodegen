@@ -28,7 +28,7 @@ async def main():
                 log.debug("Processing emails...")
                 email_sender = SMTPEmailSender(email, passwd)
                 tasks = list()
-
+                raise ValueError()
                 try:
                     raise ValueError()
                     # Process each email in inbox
