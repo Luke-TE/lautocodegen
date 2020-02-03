@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 async def main():
     email_getter = IMAPEmailGetter(email, passwd)
     web_browser = WebpageInterface()
-
+    raise ValueError()
     try:
         loyalty_scheme = LoyaltyScheme(stamps, loyalty_url, web_browser)
 
