@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 async def main():
     email_getter = IMAPEmailGetter(email, passwd)
     web_browser = WebpageInterface()
-    raise ValueError()
+
     try:
         loyalty_scheme = LoyaltyScheme(stamps, loyalty_url, web_browser)
 
@@ -28,9 +28,8 @@ async def main():
                 log.debug("Processing emails...")
                 email_sender = SMTPEmailSender(email, passwd)
                 tasks = list()
-                raise ValueError()
+
                 try:
-                    raise ValueError()
                     # Process each email in inbox
                     for uid, new_email in new_emails:
                         log.debug(f"New email from {new_email['From']}")
@@ -48,8 +47,8 @@ async def main():
                     log.debug("Sending loyalty codes now...")
                     await asyncio.gather(*tasks)
 
-                except:
-                    pass
+                except Exception as e:
+                    print(f"Error received: {str(e)}")
 
                 finally:
                     email_sender.close()
@@ -58,6 +57,9 @@ async def main():
                 # Wait as no emails currently
                 log.debug("No emails. Sleeping...")
                 await asyncio.sleep(5)
+
+    except Exception as e:
+        print(f"Error received: {str(e)}")
 
     finally:
         email_getter.close()
