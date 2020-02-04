@@ -9,22 +9,23 @@ class SMTPEmailSender:
     PORT = 587
     servers_path = "lautocodegen/resources/smtp_servers.json"
 
-    def __init__(self, email_addr, passwd):
+    def __init__(self, user_email_addr, passwd, sender_email_addr=None):
         """
         Create an SMTP connection
-        :param email_addr: The email address to use in the connection
+        :param user_email_addr: The email address to use in the connection
         :param passwd: The password for the account
         """
-        self._host_email_addr = email_addr
+        self._sender_email_addr = sender_email_addr if sender_email_addr else user_email_addr
+        self._host_email_addr = user_email_addr
         with open(self.servers_path) as json_file:
             hosts = json.load(json_file)
-        domain = get_domain(email_addr)
+        domain = get_domain(user_email_addr)
         host = hosts.get(domain, "")
         self._conn = smtplib.SMTP(host, self.PORT)
         try:
             context = ssl.create_default_context()
             self._conn.starttls(context=context)
-            self._conn.login(email_addr, passwd)
+            self._conn.login(user_email_addr, passwd)
         except smtplib.SMTPException:
             raise Exception("Could not login.")
 
@@ -36,7 +37,7 @@ class SMTPEmailSender:
         :return: None
         """
         new_email = copy.deepcopy(old_email)
-        new_email.replace_header("From", self._host_email_addr)
+        new_email.replace_header("From", self._sender_email_addr)
         new_email.replace_header("To", recipient_email_addr)
         self._conn.sendmail(self._host_email_addr, recipient_email_addr, new_email.as_string())
 
