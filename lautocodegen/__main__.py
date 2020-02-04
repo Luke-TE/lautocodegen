@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 import os
+import sentry_sdk
 from lautocodegen.email.imap_email_getter import IMAPEmailGetter
 from lautocodegen.email.smtp_email_sender import SMTPEmailSender
 from lautocodegen.web.loyalty_scheme import LoyaltyScheme
@@ -98,5 +99,9 @@ if __name__ == '__main__':
     loyalty_url = env_vars["LCG_LOYALTY_URL"]
     stamps = int(env_vars["LCG_STAMPS"])
     secret_code = env_vars["LCG_SECRET_CODE"]
+    sentry_dsn = env_vars.get("LCG_SENTRY_DSN", "")
+
+    if sentry_dsn != "":
+        sentry_sdk.init(sentry_dsn)
 
     asyncio.run(main())
