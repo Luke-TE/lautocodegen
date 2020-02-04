@@ -12,10 +12,11 @@ logging.basicConfig(level=logging.INFO)
 
 
 async def main():
-    email_getter = IMAPEmailGetter(email, passwd)
+    email_getter = None
     web_browser = WebpageInterface()
 
     try:
+        email_getter = IMAPEmailGetter(user_email, passwd)
         loyalty_scheme = LoyaltyScheme(stamps, loyalty_url, web_browser)
 
         # Endless loop for sending loyalty codes
@@ -26,7 +27,7 @@ async def main():
             new_emails = email_getter.get_mailbox_contents('INBOX')
             if new_emails:
                 log.debug("Processing emails...")
-                email_sender = SMTPEmailSender(email, passwd)
+                email_sender = SMTPEmailSender(user_email, passwd, sender_email)
                 tasks = list()
 
                 try:
@@ -60,6 +61,8 @@ async def main():
                 log.debug("No emails. Sleeping...")
                 await asyncio.sleep(5)
 
+            email_getter.close()
+
     except Exception as e:
         log.warning(f"Error received: {str(e)}")
 
@@ -86,7 +89,8 @@ if __name__ == '__main__':
     else:
         env_vars = os.environ
 
-    email = env_vars["LCG_EMAIL"]
+    user_email = env_vars["LCG_USER"]
+    sender_email = env_vars["LCG_SENDER"]
     passwd = env_vars["LCG_PASS"]
     loyalty_url = env_vars["LCG_LOYALTY_URL"]
     stamps = int(env_vars["LCG_STAMPS"])
