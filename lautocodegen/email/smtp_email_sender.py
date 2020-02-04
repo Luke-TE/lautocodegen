@@ -15,8 +15,7 @@ class SMTPEmailSender:
         :param user_email_addr: The email address to use in the connection
         :param passwd: The password for the account
         """
-        self._sender_email_addr = sender_email_addr if sender_email_addr else user_email_addr
-        self._host_email_addr = user_email_addr
+        self.sender_email_addr = sender_email_addr if sender_email_addr else user_email_addr
         with open(self.servers_path) as json_file:
             hosts = json.load(json_file)
         domain = get_domain(user_email_addr)
@@ -37,9 +36,9 @@ class SMTPEmailSender:
         :return: None
         """
         new_email = copy.deepcopy(old_email)
-        new_email.replace_header("From", self._sender_email_addr)
+        new_email.replace_header("From", self.sender_email_addr)
         new_email.replace_header("To", recipient_email_addr)
-        self._conn.sendmail(self._host_email_addr, recipient_email_addr, new_email.as_string())
+        self._conn.sendmail(self.sender_email_addr, recipient_email_addr, new_email.as_string())
 
     def close(self):
         """

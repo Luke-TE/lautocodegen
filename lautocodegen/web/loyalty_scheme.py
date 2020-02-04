@@ -60,14 +60,18 @@ class LoyaltyScheme:
         self.web_browser.goto(verify_link)
         log.debug("Account verified. Sending loyalty code...")
 
-    async def generate_loyalty_code(self, email_getter: IMAPEmailGetter, verf_mailbox):
+    async def generate_loyalty_code(self,
+                                    email_getter: IMAPEmailGetter,
+                                    verf_mailbox,
+                                    sender_addr):
         """
         Generate a loyalty code email
         :param email_getter: The email connection to use
         :param verf_mailbox: The mailbox to get the verification email from
+        :param sender_addr: The address to set as the sender of the email
         :return: None
         """
-        await self.complete_loyalty_card(email_getter.email_addr)
+        await self.complete_loyalty_card(sender_addr)
         await asyncio.sleep(3)
         await self.verify_account(email_getter, verf_mailbox)
 
@@ -86,7 +90,7 @@ class LoyaltyScheme:
         loyalty_code_emails = email_getter.get_mailbox_contents(code_mailbox)
         if not loyalty_code_emails:
             # If no remaining, loyalty codes, generate a new one
-            await self.generate_loyalty_code(email_getter, verf_mailbox)
+            await self.generate_loyalty_code(email_getter, verf_mailbox, email_sender.sender_email_addr)
             while not loyalty_code_emails:
                 loyalty_code_emails = email_getter.get_mailbox_contents(code_mailbox)
 
