@@ -16,11 +16,13 @@ async def main():
     web_browser = WebpageInterface()
 
     try:
-        email_getter = IMAPEmailGetter(user_email, passwd)
         loyalty_scheme = LoyaltyScheme(stamps, loyalty_url, web_browser)
 
         # Endless loop for sending loyalty codes
         while True:
+            # Refresh the IMAP Connection after every loop
+            email_getter = IMAPEmailGetter(user_email, passwd)
+
             # Move junk emails to inbox
             email_getter.move_junk_emails_to_inbox()
 
@@ -61,6 +63,7 @@ async def main():
                 log.debug("No emails. Sleeping...")
                 await asyncio.sleep(5)
 
+            # CLose IMAP session after every loop
             email_getter.close()
 
     except Exception as e:
