@@ -50,7 +50,7 @@ async def main():
                     await asyncio.gather(*tasks)
 
                 except Exception as e:
-                    print(f"Error received: {str(e)}")
+                    log.warning(f"Error received: {str(e)}")
 
                 finally:
                     email_sender.close()
@@ -61,7 +61,7 @@ async def main():
                 await asyncio.sleep(5)
 
     except Exception as e:
-        print(f"Error received: {str(e)}")
+        log.warning(f"Error received: {str(e)}")
 
     finally:
         email_getter.close()
