@@ -32,12 +32,14 @@ async def main():
                 try:
                     # Process each email in inbox
                     for uid, new_email in new_emails:
-                        log.debug(f"New email from {new_email['From']}")
-                        if secret_code in new_email['Subject']:
+                        log.debug(f"New email from {new_email.get('From', 'Unknown Sender')}")
+                        if secret_code in new_email.get('Subject', ''):
                             # Schedule task for sending (and generating) loyalty codes
                             log.debug(f"Email has the subject {secret_code}. Loyalty code will be sent.")
                             tasks.append(asyncio.create_task(
-                                loyalty_scheme.send_loyalty_code(email_getter, email_sender, new_email["From"])))
+                                loyalty_scheme.send_loyalty_code(email_getter,
+                                                                 email_sender,
+                                                                 new_email.get('From', 'Unknown Sender'))))
                         else:
                             log.debug(f"Email did not have the subject {secret_code}.")
 
