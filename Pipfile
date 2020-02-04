@@ -9,6 +9,7 @@ verify_ssl = true
 requests = "*"
 selenium = "*"
 bs4 = "*"
+sentry-sdk = "*"
 
 [requires]
 python_version = "3.7"
