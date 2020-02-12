@@ -69,6 +69,7 @@ LCG_PASS=... # The password for the email account
 LCG_LOYALTY_URL=... # The URL of the loyalty scheme
 LCG_STAMPS=... # The number of stamps to receive the loyalty code
 LCG_SECRET_CODE=... # The subject of incoming emails required
+LCG_SENTRY_DSN=... # The DSN for sentry monitoring (optional)
 ```
 Set these before running the script. 
 For Docker deployment, these should be placed in an `env_file`.
